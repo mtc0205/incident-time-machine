@@ -1,0 +1,182 @@
+# Incident Time Machine — Codegeist 2026 entry
+# Manifest validated against @forge/cli's shipped schema (npm run validate:manifest).
+modules:
+  # ---------- backend functions ----------
+  function:
+    - key: resolver
+      handler: src/backend/resolver.handler
+    - key: trigger-fn
+      handler: src/backend/trigger.onIssueCreated
+    - key: action-history
+      handler: src/backend/actions.getIncidentHistory
+    - key: action-cause
+      handler: src/backend/actions.getLikelyCause
+    - key: action-digest
+      handler: src/backend/actions.postTriageDigest
+
+  # ---------- UI: issue panel ----------
+  jira:issuePanel:
+    - key: incident-time-machine
+      resource: ui
+      resolver:
+        function: resolver
+      render: native
+      icon: ⏱️
+      title: Incident Time Machine
+
+  # ---------- automation: auto-digest on incident creation ----------
+  trigger:
+    - key: incident-created
+      function: trigger-fn
+      events:
+        - avi:jira:created:issue
+
+  # ---------- Rovo agent + tools ----------
+  action:
+    - key: get-incident-history
+      name: Find similar incidents
+      description: >-
+        Retrieves the most similar resolved incidents for a Jira issue key,
+        with match scores, the fix that worked, resolution time and
+        resolvers. Use when asked has-this-happened-before or who-fixed-this.
+      actionVerb: GET
+      function: action-history
+      outputContext:
+        entityName: incident
+        outputType: LIST
+        outputDomain: jira
+      inputs:
+        issueKey:
+          title: Issue key
+          description: The Jira issue key of the incident, e.g. IN-1042
+          type: string
+      outputs:
+        summary:
+          description: Human-readable summary of the matches
+          nullable: false
+          type: string
+        matches:
+          description: JSON array of scored matches with fixes and resolvers
+          nullable: false
+          type: string
+
+    - key: get-likely-cause
+      name: Identify likely cause
+      description: >-
+        Correlates deployments and pull requests from the Teamwork Graph with
+        the incident window and returns the changes most likely responsible,
+        with reasoning. Use when asked what caused this or what shipped
+        before it broke.
+      actionVerb: GET
+      function: action-cause
+      outputContext:
+        entityName: change
+        outputType: LIST
+        outputDomain: devops
+      inputs:
+        issueKey:
+          title: Issue key
+          description: The Jira issue key of the incident, e.g. IN-1042
+          type: string
+      outputs:
+        summary:
+          description: One-line verdict naming the top suspect
+          nullable: false
+          type: string
+        suspects:
+          description: JSON array of scored suspect changes with reasoning
+          nullable: false
+          type: string
+
+    - key: post-triage-digest
+      name: Post triage digest
+      description: >-
+        Posts the Incident Time Machine digest (similar incidents, fixes,
+        responders, likely cause) as a comment on the issue. Only call when
+        the user explicitly asks to post or share the digest.
+      actionVerb: CREATE
+      function: action-digest
+      outputContext:
+        entityName: digest
+        outputType: OBJECT
+        outputDomain: jira
+      inputs:
+        issueKey:
+          title: Issue key
+          description: The Jira issue key of the incident, e.g. IN-1042
+          type: string
+      outputs:
+        posted:
+          description: Returns the string true when the comment was created
+          nullable: false
+          type: string
+        message:
+          description: Status message describing the outcome
+          nullable: false
+          type: string
+
+  rovo:agent:
+    - key: chronos
+      name: Chronos
+      description: >-
+        Incident memory. Asks nothing, forgets nothing — Chronos surfaces the
+        incidents that happened before yours, who fixed them, and the change
+        that most likely caused yours.
+      prompt: |
+        You are Chronos, the Incident Time Machine agent for Jira Service Management teams.
+
+        Your job: when an incident is hurting, give responders instant memory of every similar incident that came before — what it was, who fixed it, how long it took, the fix that worked, and the change most likely responsible this time.
+
+        How you work:
+        1. When given an issue key (e.g. IN-1042), ALWAYS call your tools rather than guessing. Use get-incident-history for similar incidents and responder suggestions, and get-likely-cause for the suspected deploy/PR.
+        2. Present results in this order: best match and its score, the fix that worked, who resolved it and how long it took, the top suspect change with its reasoning, then suggested responders.
+        3. Scores and reasons come from a deterministic engine (text similarity, service overlap, label overlap, recency, deploy timing). Quote them as facts, e.g. "IN-1873 matched at 91% (text similarity, service overlap)". Never invent matches, people, or numbers.
+        4. If the tools report the demo corpus, say so once: "Showing seeded demo history — connect your dev tools or resolve incidents to go live."
+        5. Only call post-triage-digest when the user explicitly asks to post, share, or write the digest to the issue.
+        6. If no matches exist, say it plainly and suggest checking the affected service's recent changes.
+
+        Tone: calm, precise, slightly time-traveler flavored. Short paragraphs. No fluff, no apologies, no emoji spam (⏱️ once per answer maximum).
+      conversationStarters:
+        - What incidents are similar to IN-1042?
+        - Who fixed issues like this before, and how?
+        - What shipped right before this incident?
+        - Post the triage digest on IN-1042
+      actions:
+        - get-incident-history
+        - get-likely-cause
+        - post-triage-digest
+
+  # ---------- MCP server: same tools for ANY agent ----------
+  rovo:mcp:
+    - key: incident-time-machine-mcp
+      name: Incident Time Machine
+      tools:
+        - get-incident-history
+        - get-likely-cause
+        - post-triage-digest
+
+resources:
+  - key: ui
+    path: src/frontend/index.tsx
+
+permissions:
+  scopes:
+    # Jira: read issues + post digest comments
+    - read:jira-work
+    - write:jira-work
+    # Teamwork Graph (read-only consumption; :external = connector-ingested entities)
+    - read:graph:issue:jira
+    - read:graph:page:confluence
+    - read:graph:deployment:external
+    - read:graph:pull-request:external
+    - read:graph:commit:external
+    - read:graph:repository:external
+    - read:graph:service:external
+    - read:graph:user:atlassian
+    # Forge key-value store (demo mode flag, digest dedupe)
+    - storage:app
+
+app:
+  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  runtime:
+    name: nodejs24.x
