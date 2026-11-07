@@ -1,0 +1,38 @@
+{
+  "name": "incident-time-machine",
+  "version": "1.0.0",
+  "description": "Incident Time Machine — instant historical triage for Jira Service Management incidents. Codegeist 2026 entry.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "validate:manifest": "node scripts/validate-manifest.mjs",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run validate:manifest"
+  },
+  "dependencies": {
+    "@forge/api": "8.4.0",
+    "@forge/bridge": "7.2.1",
+    "@forge/kvs": "2.1.1",
+    "@forge/react": "12.4.0",
+    "@forge/resolver": "2.0.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@forge/cli": "14.2.0",
+    "@types/node": "24.19.2",
+    "@types/react": "18.3.31",
+    "ajv": "8.20.0",
+    "react": "18.3.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0",
+    "yaml": "2.9.1"
+  }
+}

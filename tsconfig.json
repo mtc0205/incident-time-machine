@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "scripts/**/*.mjs"],
+  "exclude": ["node_modules", "dist"]
+}
