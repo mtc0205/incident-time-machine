@@ -36,9 +36,9 @@ modules:
     - key: get-incident-history
       name: Find similar incidents
       description: >-
-        Retrieves the most similar resolved incidents for a Jira issue key,
-        with match scores, the fix that worked, resolution time and
-        resolvers. Use when asked has-this-happened-before or who-fixed-this.
+        Retrieves the most similar resolved incidents for a Jira issue key, with
+        match scores, the fix that worked, resolution time and resolvers. Use
+        when asked has-this-happened-before or who-fixed-this.
       actionVerb: GET
       function: action-history
       outputContext:
@@ -65,8 +65,8 @@ modules:
       description: >-
         Correlates deployments and pull requests from the Teamwork Graph with
         the incident window and returns the changes most likely responsible,
-        with reasoning. Use when asked what caused this or what shipped
-        before it broke.
+        with reasoning. Use when asked what caused this or what shipped before
+        it broke.
       actionVerb: GET
       function: action-cause
       outputContext:
@@ -92,8 +92,8 @@ modules:
       name: Post triage digest
       description: >-
         Posts the Incident Time Machine digest (similar incidents, fixes,
-        responders, likely cause) as a comment on the issue. Only call when
-        the user explicitly asks to post or share the digest.
+        responders, likely cause) as a comment on the issue. Only call when the
+        user explicitly asks to post or share the digest.
       actionVerb: CREATE
       function: action-digest
       outputContext:
@@ -161,10 +161,8 @@ resources:
 
 permissions:
   scopes:
-    # Jira: read issues + post digest comments
     - read:jira-work
     - write:jira-work
-    # Teamwork Graph (read-only consumption; :external = connector-ingested entities)
     - read:graph:issue:jira
     - read:graph:page:confluence
     - read:graph:deployment:external
@@ -173,10 +171,9 @@ permissions:
     - read:graph:repository:external
     - read:graph:service:external
     - read:graph:user:atlassian
-    # Forge key-value store (demo mode flag, digest dedupe)
     - storage:app
 
 app:
-  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  id: ari:cloud:ecosystem::app/7df54788-36b3-4dd5-9bf4-5c3890e93775
   runtime:
     name: nodejs24.x
