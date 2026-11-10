@@ -4,15 +4,15 @@ modules:
   # ---------- backend functions ----------
   function:
     - key: resolver
-      handler: src/backend/resolver.handler
+      handler: backend/resolver.handler
     - key: trigger-fn
-      handler: src/backend/trigger.onIssueCreated
+      handler: backend/trigger.onIssueCreated
     - key: action-history
-      handler: src/backend/actions.getIncidentHistory
+      handler: backend/actions.getIncidentHistory
     - key: action-cause
-      handler: src/backend/actions.getLikelyCause
+      handler: backend/actions.getLikelyCause
     - key: action-digest
-      handler: src/backend/actions.postTriageDigest
+      handler: backend/actions.postTriageDigest
 
   # ---------- UI: issue panel ----------
   jira:issuePanel:
