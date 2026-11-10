@@ -17,11 +17,11 @@ modules:
   # ---------- UI: issue panel ----------
   jira:issuePanel:
     - key: incident-time-machine
-      resource: ui
+      resource: ui/entry
       resolver:
         function: resolver
       render: native
-      icon: ⏱️
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
       title: Incident Time Machine
 
   # ---------- automation: auto-digest on incident creation ----------
@@ -157,7 +157,9 @@ modules:
 
 resources:
   - key: ui
-    path: src/frontend/index.tsx
+    path: src/frontend
+    entry:
+      entry: index.tsx
 
 permissions:
   scopes:
